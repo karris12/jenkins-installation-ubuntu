@@ -157,3 +157,299 @@ Copy the password and paste it into the Jenkins setup screen.
 
 ---
 
+==================================================================
+
+
+
+# How to Install and Secure Tomcat 9 on Ubuntu 22.04
+
+This guide explains **what to do**, **why you do it**, and **what each command means**, step by step.
+
+---
+
+## Prerequisites
+
+* Ubuntu 22.04 LTS
+* Sudo (administrator) access
+* Internet connection
+
+---
+
+## 1. Change Hostname (Optional but Helpful)
+
+```bash
+sudo hostnamectl set-hostname Tomcat
+```
+
+### What this command does
+
+* `hostnamectl` → manages the system’s hostname
+* `set-hostname Tomcat` → renames your server to **Tomcat**
+* Helps identify the server when managing multiple machines
+
+✅ Safe and optional
+
+---
+
+## 2. Update System Packages
+
+```bash
+sudo apt update
+```
+
+### What this command does
+
+* Refreshes the list of available software packages
+* Ensures you install the **latest stable versions**
+* Always do this before installing new software
+
+✅ Best practice
+
+---
+
+## 3. Install Tomcat 9
+
+```bash
+sudo apt install tomcat9 tomcat9-docs tomcat9-admin -y
+```
+
+### What this command installs
+
+| Package         | Purpose                     |
+| --------------- | --------------------------- |
+| `tomcat9`       | Core Tomcat server          |
+| `tomcat9-docs`  | Official documentation      |
+| `tomcat9-admin` | Manager & admin web apps    |
+| `-y`            | Automatically answers “yes” |
+
+✅ Tomcat starts automatically after install
+
+---
+
+## 4. Deploy Admin & Manager Applications
+
+```bash
+sudo cp -r /usr/share/tomcat9-admin/* /var/lib/tomcat9/webapps/
+```
+
+### What this command does
+
+* Copies admin web apps into Tomcat’s active deployment directory
+* Enables:
+
+  * `/manager`
+  * `/host-manager`
+
+Without this step, admin pages may not load.
+
+---
+
+## 5. Create Tomcat Admin User
+
+### Open the user configuration file
+
+```bash
+sudo nano /var/lib/tomcat9/conf/tomcat-users.xml
+```
+
+### What this file is
+
+* Controls **who can log in**
+* Defines **roles and permissions**
+
+---
+
+### Add roles and user
+
+Scroll to the bottom and add **before `</tomcat-users>`**:
+
+```xml
+<role rolename="manager-script"/>
+<user username="tomcat" password="admin" roles="manager-script"/>
+```
+
+### What this means (very important)
+
+* `manager-script` → allows access to Tomcat Manager
+* `username="tomcat"` → login name
+* `password="admin"` → login password (change later!)
+
+⚠️ **Never use weak passwords in production**
+
+---
+
+## 6. Restart Tomcat
+
+```bash
+sudo systemctl restart tomcat9
+```
+
+### What this command does
+
+* Reloads Tomcat
+* Applies configuration changes
+* Required after editing config files
+
+---
+
+## 7. Verify Tomcat Is Running
+
+```bash
+sudo systemctl status tomcat9
+```
+
+### What to look for
+
+```
+Active: active (running)
+```
+
+❌ If not running, check logs:
+
+```bash
+sudo journalctl -u tomcat9
+```
+
+---
+
+## 8. Allow Tomcat Through Firewall
+
+Tomcat uses **port 8080**.
+
+```bash
+sudo ufw allow 8080
+sudo ufw reload
+```
+
+### What this does
+
+* Opens port 8080 for browser access
+* Required if UFW firewall is enabled
+
+Check firewall status:
+
+```bash
+sudo ufw status
+```
+
+---
+
+## 9. Access Tomcat Web UI
+
+Open a browser and go to:
+
+```
+http://<your-server-ip>:8080
+```
+
+### You should see
+
+* **Apache Tomcat welcome page**
+
+🎉 Tomcat is working!
+
+---
+
+## 10. Access Tomcat Manager & Admin Pages
+
+### Manager App
+
+```
+http://<your-server-ip>:8080/manager
+```
+
+### Host Manager
+
+```
+http://<your-server-ip>:8080/host-manager
+```
+
+### Login credentials
+
+* **Username:** `tomcat`
+* **Password:** `admin`
+
+---
+
+## 11. Security Hardening (Very Important)
+
+### 🔐 Change Default Password
+
+Edit again:
+
+```bash
+sudo nano /var/lib/tomcat9/conf/tomcat-users.xml
+```
+
+Use a strong password:
+
+```xml
+<user username="tomcat" password="Str0ngP@ssw0rd!" roles="manager-script"/>
+```
+
+Restart:
+
+```bash
+sudo systemctl restart tomcat9
+```
+
+---
+
+### 🔒 Restrict Manager App to Localhost (Recommended)
+
+Edit:
+
+```bash
+sudo nano /var/lib/tomcat9/webapps/manager/META-INF/context.xml
+```
+
+Add:
+
+```xml
+<Valve className="org.apache.catalina.valves.RemoteAddrValve"
+       allow="127\.0\.0\.1" />
+```
+
+### What this does
+
+* Blocks remote access to Manager UI
+* Prevents brute-force attacks
+* Allows access only from the server itself
+
+---
+
+## 12. Common Tomcat Commands (Cheat Sheet)
+
+| Action         | Command                          |
+| -------------- | -------------------------------- |
+| Start Tomcat   | `sudo systemctl start tomcat9`   |
+| Stop Tomcat    | `sudo systemctl stop tomcat9`    |
+| Restart Tomcat | `sudo systemctl restart tomcat9` |
+| Status         | `sudo systemctl status tomcat9`  |
+| View logs      | `/var/log/tomcat9/`              |
+
+---
+
+## 13. Important Tomcat Directories
+
+| Purpose      | Path                                  |
+| ------------ | ------------------------------------- |
+| Config files | `/var/lib/tomcat9/conf/`              |
+| Web apps     | `/var/lib/tomcat9/webapps/`           |
+| Logs         | `/var/log/tomcat9/`                   |
+| Service file | `/lib/systemd/system/tomcat9.service` |
+
+---
+
+## ✅ Summary
+
+✔ Tomcat installed
+✔ Web UI accessible
+✔ Admin user configured
+✔ Firewall configured
+✔ Security hardened
+
+---
+
+
+
