@@ -229,7 +229,7 @@ sudo apt install tomcat9 tomcat9-docs tomcat9-admin -y
 ## 4. Deploy Admin & Manager Applications
 
 ```bash
-sudo cp -r /usr/share/tomcat9-admin/* /var/lib/tomcat9/webapps/
+sudo cp -r /usr/share/tomcat9-admin/* /var/lib/tomcat9/webapps/ -v
 ```
 
 ### What this command does
