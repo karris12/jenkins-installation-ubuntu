@@ -26,7 +26,7 @@ sudo apt update
 ## 3. Install Java 17 (Required for Jenkins)
 
 ```bash
-sudo apt install openjdk-17-jdk -y
+sudo apt install fontconfig openjdk-17-jre -y
 ```
 
 ### Verify Java Installation
@@ -55,10 +55,12 @@ mvn --version
 
 ## 5. Jenkins Installation
 
-### Step 1: Add Jenkins Repository Key
+### Step 1: Add Jenkins GPG key using keyserver
 
 ```bash
-curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+sudo gpg --keyserver keyserver.ubuntu.com --recv-keys 7198F4B714ABFC68
+sudo gpg --export 7198F4B714ABFC68 | sudo tee /usr/share/keyrings/jenkins-keyring.gpg > /dev/null
+
 ```
 
 ---
@@ -66,7 +68,8 @@ curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee /usr/sha
 ### Step 2: Add Jenkins Repository
 
 ```bash
-echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/" | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
 ```
 
 ---
